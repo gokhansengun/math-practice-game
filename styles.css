@@ -8,34 +8,66 @@ body {
   background-color: #f2f2f2;
 }
 
-#game-container {
+#start-container, #game-container {
   text-align: center;
   background: #fff;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  width: 350px;
 }
 
-#question-box {
-  background-color: #e0f7fa;
-  padding: 20px;
+.option-box {
+  border: 2px solid #ddd;
   border-radius: 5px;
-  font-size: 1.5em;
-  margin-bottom: 20px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: left;
+}
+
+.option-box h2 {
+  font-size: 1em;
+  color: #333;
+  margin: 0 0 10px;
+}
+
+.option-box label {
+  display: inline-block;
+  margin-right: 15px;
+  font-size: 0.9em;
+}
+
+label input[type="radio"] {
+  margin-right: 5px;
 }
 
 button {
   background-color: #4CAF50;
   color: white;
   padding: 10px 20px;
-  margin: 10px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 1em;
 }
 
 button:hover {
   background-color: #45a049;
+}
+
+#question-box {
+  background-color: #e0f7fa;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: 1.8em;
+  margin-bottom: 20px;
+  border: 3px solid #ffb74d;
+}
+
+#question-number {
+  font-size: 0.5em;
+  color: #555;
+  margin-bottom: 5px;
 }
 
 #choices button {
@@ -44,7 +76,8 @@ button:hover {
   margin: 5px 0;
 }
 
-#timer, #score {
-  font-size: 1.2em;
-  margin-top: 10px;
+#countdown {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  color: #ff5722;
 }

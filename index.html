@@ -7,15 +7,42 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
+    <div id="start-container">
         <h1>Math Practice Game</h1>
+
+        <div class="option-box">
+            <h2>Select Difficulty</h2>
+            <label><input type="radio" name="difficulty" value="easy" checked> Easy</label>
+            <label><input type="radio" name="difficulty" value="medium"> Medium</label>
+            <label><input type="radio" name="difficulty" value="hard"> Hard</label>
+        </div>
+
+        <div class="option-box">
+            <h2>Number of Questions</h2>
+            <label><input type="radio" name="question-count" value="10" checked> 10</label>
+            <label><input type="radio" name="question-count" value="20"> 20</label>
+        </div>
+
+        <div class="option-box">
+            <h2>Max Allowed Seconds per Question</h2>
+            <label><input type="radio" name="max-time" value="10" checked> 10s</label>
+            <label><input type="radio" name="max-time" value="15"> 15s</label>
+            <label><input type="radio" name="max-time" value="20"> 20s</label>
+        </div>
+
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="game-container" style="display: none;">
+        <h1>Math Practice Game</h1>
+        <div id="countdown"><span id="countdown-timer">10</span></div>
         <div id="question-box">
+            <div id="question-number"></div>
             <div id="question"></div>
         </div>
         <div id="choices"></div>
-        <div id="timer">Time: 0s</div>
-        <div id="score">Score: 0/10</div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

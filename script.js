@@ -1,41 +1,63 @@
 let questionCount = 0;
 let correctAnswers = 0;
 let startTime;
+let timeTaken = 0;
+let countdownInterval;
 let questions = [];
-const operators = ['+', '-', '*', '/'];
+let totalQuestions;
+let difficultyLevel;
+let maxTimePerQuestion;
+
+const operatorsEasy = ['+', '-'];
+const operatorsMedium = ['+', '-', '*', '/'];
+const operatorsHard = ['*', '/'];
 
 function startGame() {
+    // Get difficulty, question count, and max time per question from user input
+    difficultyLevel = document.querySelector('input[name="difficulty"]:checked').value;
+    totalQuestions = parseInt(document.querySelector('input[name="question-count"]:checked').value);
+    maxTimePerQuestion = parseInt(document.querySelector('input[name="max-time"]:checked').value);
+
+    // Hide start screen and show game screen
+    document.getElementById('start-container').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+
+    // Initialize game and generate questions
     startTime = Date.now();
     generateQuestions();
     showQuestion();
 }
 
 function generateQuestions() {
-    for (let i = 0; i < 10; i++) {
-        const num1 = Math.floor(Math.random() * 10) + 1;
-        const num2 = Math.floor(Math.random() * 10) + 1;
+    questions = [];
+    const operators = difficultyLevel === 'easy' ? operatorsEasy : (difficultyLevel === 'medium' ? operatorsMedium : operatorsHard);
+
+    for (let i = 0; i < totalQuestions; i++) {
+        let num1, num2, question, answer;
         const operator = operators[Math.floor(Math.random() * operators.length)];
-        let question, answer;
-        
-        switch (operator) {
-            case '+':
+
+        if (operator === '*') {
+            num1 = difficultyLevel === 'hard' ? Math.floor(Math.random() * 90) + 10 : Math.floor(Math.random() * 10) + 1;
+            num2 = difficultyLevel === 'hard' ? Math.floor(Math.random() * 9) + 1 : Math.floor(Math.random() * 10) + 1;
+            question = `${num1} * ${num2}`;
+            answer = num1 * num2;
+        } else if (operator === '/') {
+            num2 = Math.floor(Math.random() * 9) + 1; // One-digit divisor
+            answer = difficultyLevel === 'hard' ? Math.floor(Math.random() * 90) + 10 : Math.floor(Math.random() * 10) + 1;
+            num1 = answer * num2;
+            question = `${num1} / ${num2}`;
+        } else {
+            num1 = Math.floor(Math.random() * (difficultyLevel === 'easy' ? 10 : 100)) + 1;
+            num2 = Math.floor(Math.random() * (difficultyLevel === 'easy' ? 10 : 100)) + 1;
+            if (operator === '+') {
                 question = `${num1} + ${num2}`;
                 answer = num1 + num2;
-                break;
-            case '-':
+            } else {
                 question = `${num1} - ${num2}`;
                 answer = num1 - num2;
-                break;
-            case '*':
-                question = `${num1} * ${num2}`;
-                answer = num1 * num2;
-                break;
-            case '/':
-                question = `${num1 * num2} / ${num2}`;
-                answer = num1;
-                break;
+            }
         }
-        
+
         const choices = generateChoices(answer);
         questions.push({ question, answer, choices });
     }
@@ -44,15 +66,17 @@ function generateQuestions() {
 function generateChoices(correctAnswer) {
     const choices = new Set([correctAnswer]);
     while (choices.size < 4) {
-        choices.add(Math.floor(Math.random() * 20) + 1);
+        choices.add(Math.floor(Math.random() * 200) + 1);  // Random range extended for more variety
     }
     return Array.from(choices).sort(() => Math.random() - 0.5);
 }
 
 function showQuestion() {
     if (questionCount < questions.length) {
+        startCountdown();
         const currentQuestion = questions[questionCount];
-        document.getElementById('question').innerText = `Question ${questionCount + 1}: ${currentQuestion.question}`;
+        document.getElementById('question-number').innerText = `Question #${questionCount + 1}`;
+        document.getElementById('question').innerText = currentQuestion.question;
         const choicesContainer = document.getElementById('choices');
         choicesContainer.innerHTML = '';
         currentQuestion.choices.forEach(choice => {
@@ -66,12 +90,26 @@ function showQuestion() {
     }
 }
 
+function startCountdown() {
+    let timeLeft = maxTimePerQuestion;
+    document.getElementById('countdown-timer').innerText = timeLeft;
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('countdown-timer').innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            endGame(true);
+        }
+    }, 1000);
+}
+
 function checkAnswer(selectedAnswer) {
     const currentQuestion = questions[questionCount];
+    clearInterval(countdownInterval);
     if (selectedAnswer === currentQuestion.answer) {
         correctAnswers++;
         questionCount++;
-        document.getElementById('score').innerText = `Score: ${correctAnswers}/10`;
         showQuestion();
     } else {
         endGame(true);
@@ -80,12 +118,56 @@ function checkAnswer(selectedAnswer) {
 
 function endGame(wrongAnswer = false) {
     const endTime = Date.now();
-    const timeTaken = Math.round((endTime - startTime) / 1000);
+    timeTaken = Math.round((endTime - startTime) / 1000);
+    const score = calculateScore();
     const message = wrongAnswer 
-        ? `Incorrect answer. Game over! You scored ${correctAnswers} out of ${questionCount} in ${timeTaken} seconds.`
-        : `You completed the game! Final Score: ${correctAnswers} out of 10 in ${timeTaken} seconds.`;
+        ? `Incorrect or timeout. Game over! You scored ${score}/100 in ${timeTaken} seconds.`
+        : `You completed the game! Final Score: ${score}/100 in ${timeTaken} seconds.`;
+    
+    document.getElementById('question-number').innerText = '';
     document.getElementById('question').innerText = message;
     document.getElementById('choices').innerHTML = '';
+    document.getElementById('countdown').style.display = 'none';
 }
- 
-startGame();
+
+function calculateScore() {
+    const maxScore = 100;
+    const maxTime = maxTimePerQuestion * totalQuestions;  // Optimal time adjusted for total question count
+    const timePenalty = Math.max(0, (timeTaken - maxTime) * 0.5);
+    return Math.max(0, Math.round((correctAnswers / totalQuestions) * maxScore - timePenalty));
+}
+
+function endGame(wrongAnswer = false) {
+    const endTime = Date.now();
+    timeTaken = Math.round((endTime - startTime) / 1000);
+    const score = calculateScore();
+    const message = wrongAnswer 
+        ? `Incorrect or timeout. Game over! You scored ${score}/100 in ${timeTaken} seconds.`
+        : `You completed the game! Final Score: ${score}/100 in ${timeTaken} seconds.`;
+    
+    document.getElementById('question-number').innerText = '';
+    document.getElementById('question').innerText = message;
+    document.getElementById('choices').innerHTML = '';
+    document.getElementById('countdown').style.display = 'none';
+
+    // Show the "Restart Game" button
+    const restartButton = document.createElement('button');
+    restartButton.innerText = 'Restart Game';
+    restartButton.onclick = restartGame;
+    document.getElementById('choices').appendChild(restartButton);
+}
+
+function restartGame() {
+    // Reset variables
+    questionCount = 0;
+    correctAnswers = 0;
+    timeTaken = 0;
+    questions = [];
+
+    // Hide game screen and show start screen
+    document.getElementById('game-container').style.display = 'none';
+    document.getElementById('start-container').style.display = 'block';
+
+    // Reset countdown display
+    document.getElementById('countdown').style.display = 'block';
+}
